@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Producción Zorba</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0f1e;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    iframe {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      display: block;
+    }
+
+    /* Barra de estado discreta en la parte inferior */
+    #status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 28px;
+      background: rgba(10, 15, 30, 0.85);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 16px;
+      gap: 20px;
+      z-index: 100;
+    }
+
+    #status-bar span {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.04em;
+    }
+
+    #countdown {
+      color: rgba(255,255,255,0.65);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Flash sutil al refrescar */
+    #refresh-flash {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
+      transition: opacity 0.3s ease;
+    }
+    #refresh-flash.active { opacity: 0.15; }
+  </style>
+</head>
+<body>
+
+  <iframe
+    title="Producción Zorba"
+    src="https://app.powerbi.com/view?r=eyJrIjoiZWQ1YTljODItNjgxNi00YmRjLWI4OGItNjkxNThmZGRkOWY5IiwidCI6Ijc5MzQ0NjMzLWUzZjMtNDE3Yy04MmQ3LWJlODhlYzc1YjZlNCJ9"
+    allowfullscreen
+    id="pbi-frame"
+  ></iframe>
+
+  <div id="status-bar">
+    <span>Producción Zorba</span>
+    <span>|</span>
+    <span>Próximo refresco: <strong id="countdown">2:00:00</strong></span>
+  </div>
+
+  <div id="refresh-flash"></div>
+
+  <script>
+    const REFRESH_INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 horas
+    let remaining = REFRESH_INTERVAL_MS;
+
+    function formatTime(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    const countdown = document.getElementById('countdown');
+    const flash = document.getElementById('refresh-flash');
+    const frame = document.getElementById('pbi-frame');
+
+    function doRefresh() {
+      // Flash visual suave
+      flash.classList.add('active');
+      setTimeout(() => flash.classList.remove('active'), 400);
+
+      // Recargar el iframe sin recargar toda la página
+      frame.src = frame.src;
+      remaining = REFRESH_INTERVAL_MS;
+    }
+
+    // Actualizar countdown cada segundo
+    setInterval(() => {
+      remaining -= 1000;
+      if (remaining <= 0) {
+        doRefresh();
+      }
+      countdown.textContent = formatTime(remaining);
+    }, 1000);
+  </script>
+
+</body>
+</html>
